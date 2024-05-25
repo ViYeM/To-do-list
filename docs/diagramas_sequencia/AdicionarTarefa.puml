@@ -1,0 +1,42 @@
+@startuml
+title Diagrama de Sequencia referente ao CDU001 - Adicionar Tarefa
+actor Usuário
+boundary Frontend
+boundary SpringBoot
+control taskController
+entity Task
+participant taskService
+participant taskRepository
+participant pagedResourcesAssembler
+boundary TypedQuery
+participant Hibernate
+database TodoList
+
+== Adicionar Tarefa ==
+Usuário -> Frontend: adicionar tarefa
+activate Usuário
+activate Frontend
+Frontend -> SpringBoot: POST /api/tasks/
+activate SpringBoot
+SpringBoot -> taskController: addTask(TaskDto)
+activate taskController
+taskController -> taskService: save(TaskDto)
+activate taskService
+taskService -> taskRepository: save(Task)
+activate taskRepository
+taskRepository -> Hibernate: save(Task)
+Hibernate -> TodoList: INSERT INTO Tasks
+TodoList --> Hibernate: Task saved
+Hibernate --> taskRepository: Task
+taskRepository --> taskService: Task
+taskService --> taskController: Task
+taskController --> SpringBoot: ResponseEntity.ok(Task)
+SpringBoot --> Frontend: ResponseEntity.ok(Task)
+Frontend --> Usuário: Tarefa adicionada
+deactivate taskRepository
+deactivate taskService
+deactivate taskController
+deactivate SpringBoot
+deactivate Frontend
+deactivate Usuário
+@enduml

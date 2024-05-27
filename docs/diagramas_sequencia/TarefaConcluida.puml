@@ -1,0 +1,49 @@
+@startuml
+title Diagrama de Sequencia referente ao CDU001 - Tarefa Concluída
+
+actor Usuário
+boundary Frontend
+boundary SpringBoot
+control taskController
+entity Task
+participant taskService
+participant taskRepository
+participant pagedResourcesAssembler
+boundary TypedQuery
+participant Hibernate
+database TodoList
+
+== Tarefa Concluída ==
+Usuário -> Frontend: tarefa concluída
+activate Usuário
+activate Frontend
+Frontend -> SpringBoot: PUT /api/tasks/{id}/complete
+activate SpringBoot
+SpringBoot -> taskController: completeTask(id)
+activate taskController
+taskController -> taskService: complete(id)
+activate taskService
+taskService -> taskRepository: findById(id)
+activate taskRepository
+taskRepository -> Hibernate: find(Task, id)
+Hibernate -> TodoList: SELECT * FROM Tasks WHERE id = id
+TodoList --> Hibernate: Task
+Hibernate --> taskRepository: Task
+taskRepository --> taskService: Task
+taskService -> taskRepository: save(Task)
+taskRepository -> Hibernate: update(Task)
+Hibernate -> TodoList: UPDATE Tasks SET status = 'completed' WHERE id = id
+TodoList --> Hibernate: Task updated
+Hibernate --> taskRepository: Task
+taskRepository --> taskService: Task
+taskService --> taskController: Task
+taskController --> SpringBoot: ResponseEntity.ok(Task)
+SpringBoot --> Frontend: ResponseEntity.ok(Task)
+Frontend --> Usuário: Tarefa concluída
+deactivate taskRepository
+deactivate taskService
+deactivate taskController
+deactivate SpringBoot
+deactivate Frontend
+deactivate Usuário
+@enduml

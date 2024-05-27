@@ -1,0 +1,43 @@
+@startuml
+title Diagrama de Sequencia referente ao CDU001 - Excluir Tarefa
+
+actor Usuário
+boundary Frontend
+boundary SpringBoot
+control taskController
+entity Task
+participant taskService
+participant taskRepository
+participant pagedResourcesAssembler
+boundary TypedQuery
+participant Hibernate
+database TodoList
+
+== Excluir Tarefa ==
+Usuário -> Frontend: excluir tarefa
+activate Usuário
+activate Frontend
+Frontend -> SpringBoot: DELETE /api/tasks/{id}
+activate SpringBoot
+SpringBoot -> taskController: deleteTask(id)
+activate taskController
+taskController -> taskService: delete(id)
+activate taskService
+taskService -> taskRepository: deleteById(id)
+activate taskRepository
+taskRepository -> Hibernate: delete(Task)
+Hibernate -> TodoList: DELETE FROM Tasks WHERE id = id
+TodoList --> Hibernate: Task deleted
+Hibernate --> taskRepository: Task deleted
+taskRepository --> taskService: Task deleted
+taskService --> taskController: Task deleted
+taskController --> SpringBoot: ResponseEntity.ok()
+SpringBoot --> Frontend: ResponseEntity.ok()
+Frontend --> Usuário: Tarefa excluída
+deactivate taskRepository
+deactivate taskService
+deactivate taskController
+deactivate SpringBoot
+deactivate Frontend
+deactivate Usuário
+@enduml

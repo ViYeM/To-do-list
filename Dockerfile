@@ -1,16 +1,18 @@
-FROM ubuntu:latest AS build 
-
-RUN apt-get update
-RUN apt-get install openjdk-21-jdk -y
-COPY . .
-
-RUN apt-get install maven -y
-RUN mvn clean install
-
 FROM openjdk:21-jdk-slim
 
+# Diretório de trabalho dentro do contêiner
+WORKDIR /app
+
+# Copie o arquivo pom.xml e o diretório src para o diretório de trabalho do contêiner
+COPY pom.xml .
+COPY src ./src
+
+# Instale o Maven e execute a construção do projeto
+RUN apt-get update && apt-get install -y maven
+RUN mvn clean install
+
+# Exponha a porta que sua aplicação irá usar
 EXPOSE 8080
 
-COPY --from=build target/todo-0.0.1-SNAPSHOT.jar app.jar
-
-ENTRYPOINT ["Java", "-jar", "app.jar"]
+# Comando para iniciar a aplicação
+CMD ["mvn", "spring-boot:run"]
